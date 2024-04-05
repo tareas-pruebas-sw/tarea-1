@@ -1,4 +1,8 @@
+import string
+
+from punctuation import punctuation
 from mongo import get_user_collection
+from password_generator import generatePassword
 from password_manager import PasswordManager
 
 def main():
@@ -11,6 +15,8 @@ def main():
     
     print("1. Login")
     print("2. Register")
+    print("3. Password generator")
+    print("4. Exit")
     choice = input("Enter your choice: ")
 
     if choice == "1":
@@ -25,6 +31,69 @@ def main():
         '''
         Here we should implement the register functionality
         '''
+        return
+    
+    elif choice == "3":
+
+        while True:
+            password_characters = input("Enter the number of characters to generate the password: ")
+            try: 
+                password_characters = int(password_characters)
+                if (password_characters < 8 or password_characters > 32):
+                    print("The number of characters must be between 8 and 32")
+                else:
+                    break
+            except Exception as e:
+                print("Invalid input")
+
+        print("\n1. Lowercase")
+        print("2. Uppercase")
+        print("3. Digits")
+        print("4. Special characters")
+        print("5. Generate password")
+        
+        characters = ""
+        selected_choice = ''
+
+        while True:
+            choice = input("Enter your choice(s): ")
+            if choice in selected_choice:
+                print("Characters already selected")
+                continue
+            if choice == "1":
+                characters += string.ascii_lowercase
+            elif choice == "2":
+                characters += string.ascii_uppercase
+            elif choice == "3":
+                characters += string.digits
+            elif choice == "4":
+                characters += punctuation()
+            elif choice == "5":
+                break
+            else:
+                print("Invalid choice")
+                continue
+            selected_choice += choice
+        
+        password = generatePassword(password_characters, list(characters))
+        print(f"Generated password: {password}")
+
+        while True:
+            print("1. Generate another password")
+            print("2. Exit")
+            choice = input("Enter your choice: ")
+            if choice == "1":
+                password = generatePassword(password_characters, list(characters))
+                print(f"Generated password: {password}")
+            elif choice == "2":
+                break
+            else:
+                print("Invalid choice")
+        print("Goodbye!")
+        return
+
+    elif choice == "4":
+        print("Goodbye!")
         return
     
     else:
