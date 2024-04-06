@@ -1,9 +1,11 @@
 import string
+import hashlib
 
 from punctuation import punctuation
 from mongo import get_user_collection
 from password_generator import generatePassword
 from password_manager import PasswordManager
+from cryptography.fernet import Fernet
 
 def main():
     # Get the user collection
@@ -20,18 +22,40 @@ def main():
     choice = input("Enter your choice: ")
 
     if choice == "1":
-        username = input("Enter your username: ")
-        password = input("Enter your password: ")
 
-        '''
-        Here we should implement the login functionality
-        '''
-    
+        while True:
+            username = input("Enter your username: ")
+            password = input("Enter your password: ")
+
+            user = user_collection.find_one({"username": username})
+
+            if user and user.get("password") == hashlib.sha256(password.encode()).hexdigest():
+                break
+            else:
+                print("Invalid credentials")
+        
     elif choice == "2":
-        '''
-        Here we should implement the register functionality
-        '''
-        return
+
+        while True:
+            username = input("New username: ")
+            user = user_collection.find_one({"username": username})
+            if user is None:
+                break
+            print("The username already exists")
+
+        while True:
+            password = input("New password: ")
+            if len(password) == 0:
+                print("The password cannot be empty")
+            else:
+                break
+
+        password = hashlib.sha256(password.encode()).hexdigest()
+        key = Fernet.generate_key()     
+          
+        user_collection.insert_one({"username": username, "password": password, "key": key, 'password-storage': {}})
+
+        print("User registered successfully")
     
     elif choice == "3":
 
@@ -172,6 +196,7 @@ def main():
         
         # Exit
         elif choice == "6":
+            print("Goodbye!")
             break
         
         else:
