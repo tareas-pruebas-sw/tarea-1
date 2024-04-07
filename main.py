@@ -125,6 +125,10 @@ def main():
             elif choice == "4":
                 characters += punctuation()
             elif choice == "5":
+                if len(characters) == 0:
+                    print("No characters selected")
+                    logger.warning("User warning: no characters selected")
+                    continue
                 break
             else:
                 print("Invalid choice")
