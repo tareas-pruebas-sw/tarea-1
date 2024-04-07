@@ -32,7 +32,12 @@ def main():
             username = input("Enter your username: ")
             password = input("Enter your password: ")
 
-            user = user_collection.find_one({"username": username})
+            try:
+                user = user_collection.find_one({"username": username})
+            except Exception as e:
+                print(e)
+                logger.error(f"Captured error: {e}")
+                return
 
             if user and user.get("password") == hashlib.sha256(password.encode()).hexdigest():
                 logger.info("User logged in")
@@ -46,7 +51,12 @@ def main():
 
         while True:
             username = input("New username: ")
-            user = user_collection.find_one({"username": username})
+            try:
+                user = user_collection.find_one({"username": username})
+            except Exception as e:
+                print(e)
+                logger.error(f"Captured error: {e}")
+                return
             if user is None:
                 break
             print("The username already exists")
@@ -62,8 +72,13 @@ def main():
 
         password = hashlib.sha256(password.encode()).hexdigest()
         key = Fernet.generate_key()     
-          
-        user_collection.insert_one({"username": username, "password": password, "key": key, 'password-storage': {}})
+        
+        try:
+            user_collection.insert_one({"username": username, "password": password, "key": key, 'password-storage': {}})
+        except Exception as e:
+            print(e)
+            logger.error(f"Captured error: {e}")
+            return
 
         print("User registered successfully")
         logger.info("User registered")
