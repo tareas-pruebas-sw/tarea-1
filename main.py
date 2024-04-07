@@ -1,4 +1,5 @@
 import string
+import logging
 import hashlib
 
 from punctuation import punctuation
@@ -6,6 +7,9 @@ from mongo import get_user_collection
 from password_generator import generatePassword
 from password_manager import PasswordManager
 from cryptography.fernet import Fernet
+
+logging.basicConfig(filename='mypass.log', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def main():
     # Get the user collection
@@ -22,6 +26,7 @@ def main():
     choice = input("Enter your choice: ")
 
     if choice == "1":
+        logger.info("User in login")
 
         while True:
             username = input("Enter your username: ")
@@ -30,11 +35,14 @@ def main():
             user = user_collection.find_one({"username": username})
 
             if user and user.get("password") == hashlib.sha256(password.encode()).hexdigest():
+                logger.info("User logged in")
                 break
             else:
+                logger.error("User error: invalid credentials")
                 print("Invalid credentials")
         
     elif choice == "2":
+        logger.info("User in register")
 
         while True:
             username = input("New username: ")
@@ -42,11 +50,13 @@ def main():
             if user is None:
                 break
             print("The username already exists")
+            logger.warning("User warning: username already exists")
 
         while True:
             password = input("New password: ")
             if len(password) == 0:
                 print("The password cannot be empty")
+                logger.warning("User warning: empty password")
             else:
                 break
 
@@ -56,8 +66,10 @@ def main():
         user_collection.insert_one({"username": username, "password": password, "key": key, 'password-storage': {}})
 
         print("User registered successfully")
+        logger.info("User registered")
     
     elif choice == "3":
+        logger.info("User in password generator")
 
         while True:
             password_characters = input("Enter the number of characters to generate the password: ")
@@ -65,10 +77,14 @@ def main():
                 password_characters = int(password_characters)
                 if (password_characters < 8 or password_characters > 32):
                     print("The number of characters must be between 8 and 32")
+                    logger.warning("User warning: number of characters")
                 else:
                     break
             except Exception as e:
                 print("Invalid input")
+                logger.error("User error: invalid input")
+
+        logger.info("User in selection of characters")
 
         print("\n1. Lowercase")
         print("2. Uppercase")
@@ -83,6 +99,7 @@ def main():
             choice = input("Enter your choice(s): ")
             if choice in selected_choice:
                 print("Characters already selected")
+                logger.warning("User warning: characters already selected")
                 continue
             if choice == "1":
                 characters += string.ascii_lowercase
@@ -96,6 +113,7 @@ def main():
                 break
             else:
                 print("Invalid choice")
+                logger.error("User error: invalid choice")
                 continue
             selected_choice += choice
         
@@ -109,19 +127,24 @@ def main():
             if choice == "1":
                 password = generatePassword(password_characters, list(characters))
                 print(f"Generated password: {password}")
+                logger.info("User generated another password")
             elif choice == "2":
+                logger.info("User leave password generator")
                 break
             else:
                 print("Invalid choice")
+                logger.error("User error: invalid choice")
         print("Goodbye!")
         return
 
     elif choice == "4":
         print("Goodbye!")
+        logger.info("User leave mypass")
         return
     
     else:
         print("Invalid choice")
+        logger.error("User error: invalid choice")
         return
 
     # Get the user encryption key
@@ -130,10 +153,13 @@ def main():
         key = user.get("key")
     except Exception as e:
         print(e)
+        logger.error(f"Captured error: {e}")
         return
     
     # Create the password manager
     password_manager = PasswordManager(key, user_collection, username)
+
+    logger.info("Logged user in password manager")
 
     # Main menu
     while True:
@@ -148,16 +174,20 @@ def main():
 
         # Add password
         if choice == "1":
+            logger.info("Logged user in add password")
             keyword = input("Enter a keyword: ")
             password = input("Enter a password: ")
             try:
                 password_manager.add_password(keyword, password)
                 print("Password stored successfully")
+                logger.info("Logged user stored password")
             except Exception as e:
                 print(e)
+                logger.error(f"Captured error: {e}")
         
         # List all keywords
         elif choice == "2":
+            logger.info("Logged user in list all keywords")
             try:
                 keywords = password_manager.get_all_keywords()
                 print("Keywords:")
@@ -165,42 +195,54 @@ def main():
                     print("- " + keyword)
             except Exception as e:
                 print(e)
+                logger.error(f"Captured error: {e}")
 
         # Recover password
         elif choice == "3":
+            logger.info("Logged user in recover password")
             keyword = input("Enter the keyword: ")
             try:
                 password = password_manager.recover_password(keyword)
                 print(f"The password is: {password}")
+                logger.info("Logged user recovered password")
             except Exception as e:
                 print(e)
+                logger.error(f"Captured error: {e}")
         
         # Delete password
         elif choice == "4":
+            logger.info("Logged user in delete password")
             keyword = input("Enter the keyword: ")
             try:
                 password_manager.delete_password(keyword)
                 print("Password deleted successfully")
+                logger.info("Logged user deleted password")
             except Exception as e:
                 print(e)
+                logger.error(f"Captured error: {e}")
         
         # Update password
         elif choice == "5":
+            logger.info("Logged user in update password")
             keyword = input("Enter the keyword: ")
             new_password = input("Enter the new password: ")
             try:
                 password_manager.update_password(keyword, new_password)
                 print("Password updated successfully")
+                logger.info("Logged user updated password")
             except Exception as e:
                 print(e)
+                logger.error(f"Captured error: {e}")
         
         # Exit
         elif choice == "6":
+            logger.info("Logged user leave mypass")
             print("Goodbye!")
             break
         
         else:
             print("Invalid choice")
+            logger.error("User error: invalid choice")
 
 if __name__ == "__main__":
     try:
