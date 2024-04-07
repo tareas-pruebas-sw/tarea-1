@@ -51,6 +51,10 @@ def main():
 
         while True:
             username = input("New username: ")
+            if len(username) == 0:
+                print("The username cannot be empty")
+                logger.warning("User warning: empty username")
+                continue
             try:
                 user = user_collection.find_one({"username": username})
             except Exception as e:
